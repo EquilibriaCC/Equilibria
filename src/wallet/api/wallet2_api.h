@@ -1047,7 +1047,9 @@ struct Wallet
      */
     virtual Device getDeviceType() const = 0;
 
-    virtual PendingTransaction* stakePending(const std::string& service_node_key, const std::string& amount) = 0;
+    //virtual PendingTransaction* stakePending(const std::string& service_node_key, const std::string& amount) = 0;
+    virtual PendingTransaction* stakePending(const std::string& sn_key_str, const std::string& address_str, const std::string& amount_str, std::string& error_msg) = 0;
+
     //! cold-device protocol key image sync
     virtual uint64_t coldKeyImageSync(uint64_t &spent, uint64_t &unspent) = 0;
 
