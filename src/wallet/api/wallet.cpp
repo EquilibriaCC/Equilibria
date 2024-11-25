@@ -2543,6 +2543,16 @@ PendingTransaction* WalletImpl::stakePending(const std::string& sn_key_str, cons
   return transaction;
 }
 
+uint64_t WalletImpl::getBytesReceived()
+{
+    return m_wallet->get_bytes_received();
+}
+
+uint64_t WalletImpl::getBytesSent()
+{
+    return m_wallet->get_bytes_sent();
+}
+
 } // namespace
 
 
