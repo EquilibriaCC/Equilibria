@@ -1502,7 +1502,7 @@ PendingTransaction *WalletImpl::createTransactionMultDest(const std::vector<stri
         }
         try {
             if (amount) {
-                cryptonote::xeq_construct_tx_params tx_params;
+                //cryptonote::xeq_construct_tx_params tx_params;
 
                 boost::optional<uint8_t> hard_fork_version = m_wallet->get_hard_fork_version();
                 if (!hard_fork_version)
@@ -1513,7 +1513,7 @@ PendingTransaction *WalletImpl::createTransactionMultDest(const std::vector<stri
                 xeq_construct_tx_params tx_params = tools::wallet2::construct_params(*hard_fork_version, txtype::standard);
                 transaction->m_pending_tx = m_wallet->create_transactions_2(dsts, fake_outs_count, 0 /* unlock_time */,
                                                                             adjusted_priority,
-                                                                            extra, subaddr_account, subaddr_indices);
+                                                                            extra, subaddr_account, subaddr_indices, tx_params);
             } else {
                 transaction->m_pending_tx = m_wallet->create_transactions_all(0, info.address, info.is_subaddress, 1, fake_outs_count, 0 /* unlock_time */,
                                                                               adjusted_priority,
@@ -1698,12 +1698,12 @@ uint64_t WalletImpl::estimateTransactionFee(const std::vector<std::pair<std::str
 
     return m_wallet->estimate_fee(
         m_wallet->use_fork_rules(HF_VERSION_PER_BYTE_FEE, 0),
-        m_wallet->use_fork_rules(4, 0),
+        //m_wallet->use_fork_rules(4, 0),
         1,
         m_wallet->get_min_ring_size() - 1,
         destinations.size() + 1,
         extra_size,
-        m_wallet->use_fork_rules(8, 0),
+        //m_wallet->use_fork_rules(8, 0),
         m_wallet->get_base_fee(),
         m_wallet->get_fee_multiplier(m_wallet->adjust_priority(static_cast<uint32_t>(priority))),
         m_wallet->get_fee_quantization_mask());
@@ -2510,7 +2510,8 @@ PendingTransaction* WalletImpl::stakePending(const std::string& sn_key_str, cons
 {
   crypto::public_key sn_key;
   if (!epee::string_tools::hex_to_pod(sn_key_str, sn_key)) {
-    LOG_ERROR("failed to parse service node pubkey");
+    error_msg = "failed to parse service node pubkey";
+    LOG_ERROR(error_msg);
     return nullptr;
   }
 
@@ -2532,7 +2533,11 @@ PendingTransaction* WalletImpl::stakePending(const std::string& sn_key_str, cons
   /// Note(maxim): need to be careful to call `WalletImpl::disposeTransaction` when it is no longer needed
   PendingTransactionImpl * transaction = new PendingTransactionImpl(*this);
 
-  tools::wallet2::stake_result stake_result = m_wallet->create_stake_tx(sn_key, addr_info, amount);
+  std::set<uint32_t> subaddr_indices;
+  uint32_t priority = 0;
+  double amount_fraction = 0;
+
+  tools::wallet2::stake_result stake_result = m_wallet->create_stake_tx(sn_key, amount_fraction, 0, priority, subaddr_indices);
   if (stake_result.status != tools::wallet2::stake_result_status::success)
   {
     error_msg = "Failed to create stake transaction: " + stake_result.msg;
